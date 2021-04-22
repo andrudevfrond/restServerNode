@@ -1,4 +1,6 @@
 const { response, request }= require('express');
+const bcryptjs = require('bcryptjs');
+const Usuario = require('../models/usuario');
 
 const usuariosGet = (req = request, res = response)=> {
     const { q, nombre = 'no name', apikey, page = 1, limit} = req.query;
@@ -14,27 +16,38 @@ const usuariosGet = (req = request, res = response)=> {
     });
 }
 
-const usuariosPost = (req = request, res = response )=> {
+const usuariosPost = async(req = request, res = response )=> {
 
-    const body = req.body;
+    const {nombre, correo, password, rol} = req.body;
+    const usuario = new Usuario({nombre, correo, password, rol});
+    
+    //encriptar la contraseña
+    const salt = await bcryptjs.genSaltSync();
+    usuario.password= await bcryptjs.hashSync(password, salt);
+    //guadar en la base de datos
+    await usuario.save();
 
     res.status(201).json({
-        ok: true,
-        message: 'POST manejar controlador',
-        marca: 'chevrolet',
-        body
+        usuario
     });
 }
 
-const usuariosPut = (req = request, res = response)=> {
+const usuariosPut = async (req = request, res = response)=> {
 
     const {id} = req.params;
+    const { password, google, ...resto } = req.body;
 
+    if (password){
+        //encriptar la contraseña
+        const salt = await bcryptjs.genSaltSync();
+        resto.password= await bcryptjs.hashSync(password, salt);
+    }
+
+    const usuario = await Usuario.findByIdAndUpdate(id, resto);
     res.status(403).json({
         ok: true,
         message: 'PUT manejar controlador',
-        marca: 'chevrolet',
-        id
+        usuario
     });
 }
 
