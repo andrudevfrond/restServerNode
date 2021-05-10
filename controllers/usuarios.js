@@ -12,7 +12,8 @@ const usuariosGet = (req = request, res = response)=> {
         nombre,
         apikey,
         page,
-        limit
+        limit,
+        query : req.query
     });
 }
 
@@ -44,7 +45,7 @@ const usuariosPut = async (req = request, res = response)=> {
     }
 
     const usuario = await Usuario.findByIdAndUpdate(id, resto);
-    res.status(403).json({
+    res.status(403).json({  
         ok: true,
         message: 'PUT manejar controlador',
         usuario
